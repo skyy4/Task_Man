@@ -1,88 +1,58 @@
-import React, { useState } from 'react'
+import React, { useState, useEffect, useCallback } from 'react'
+import Cards from '../components/Home/Cards'
 import { IoAddCircleSharp } from "react-icons/io5";
-import TaskList from '../components/TaskList';
-import TaskForm from '../components/TaskForm';
-import TaskSearch from '../components/TaskSearch';
+import InputData from '../components/Home/InputData';
+import axios from 'axios';
 
-const AllTasks = ({ tasks, addTask, updateTask, deleteTask, darkMode }) => {
-    const [showTaskForm, setShowTaskForm] = useState(false);
-    const [editingTask, setEditingTask] = useState(null);
-    const [searchTerm, setSearchTerm] = useState('');
-    const [filterCategory, setFilterCategory] = useState('');
-    const [filterPriority, setFilterPriority] = useState('');
-    const [sortBy, setSortBy] = useState('deadline');
+const AllTasks = () => {
+    const [inputDiv, setInputDiv] = useState('hidden')
+    const [data, setData] = useState(null);
+    const [UpdatedData, setUpdatedData] = useState({ id: '', title: '', desc: '' });
+    
+    const headers = {
+        id: localStorage.getItem("id"),
+        authorization: ` Bearer ${localStorage.getItem("token")}`,
+    }
 
-    const filteredTasks = tasks
-        .filter(task => 
-            task.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-            task.description.toLowerCase().includes(searchTerm.toLowerCase())
-        )
-        .filter(task => !filterCategory || task.category === filterCategory)
-        .filter(task => !filterPriority || task.priority === filterPriority)
-        .sort((a, b) => {
-            if (sortBy === 'deadline') {
-                return new Date(a.deadline) - new Date(b.deadline);
-            } else if (sortBy === 'priority') {
-                const priorityOrder = { high: 3, medium: 2, low: 1 };
-                return priorityOrder[b.priority] - priorityOrder[a.priority];
-            }
-            return 0;
-        });
+    const fetchTasks = useCallback(async () => {
+        try {
+            const response = await axios.get('http://localhost:1000/api/v2/get-all-tasks', { headers });
+            setData(response.data.data);
+        } catch (error) {
+            console.error('Error fetching tasks:', error);
+        }
+    }, [headers]);
 
-    const handleEditTask = (task) => {
-        setEditingTask(task);
-        setShowTaskForm(true);
+    useEffect(() => {
+        fetchTasks();
+    }, [fetchTasks]);
+
+    const handleTaskAdded = () => {
+        fetchTasks();
     };
 
     return (
-        <div className={`p-6 ${darkMode ? 'bg-gray-800' : 'bg-white'}`}>
-            <div className="flex justify-between items-center mb-6">
-                <h1 className={`text-2xl font-bold ${darkMode ? 'text-white' : 'text-gray-800'}`}>All Tasks</h1>
-                <button 
-                    onClick={() => setShowTaskForm(true)}
-                    className={`${darkMode ? 'bg-blue-600 hover:bg-blue-700' : 'bg-blue-500 hover:bg-blue-600'} text-white rounded-full p-2 transition-colors duration-300`}
-                    aria-label="Add new task"
-                >
-                    <IoAddCircleSharp className='text-3xl' />
-                </button>
+        <>
+            <div className="bg-gray-900 min-h-screen">
+                <div className='w-full flex justify-end px-6 py-4'>
+                    <button 
+                        onClick={() => setInputDiv('fixed')}
+                        className="bg-blue-500 hover:bg-blue-600 text-white rounded-full p-2 transition-colors duration-300"
+                        aria-label="Add new task"
+                    >
+                        <IoAddCircleSharp className='text-3xl' />
+                    </button>
+                </div>
+                {data && <Cards home={'true'} setInputDiv={setInputDiv} data={data.tasks} setUpdatedData={setUpdatedData} />}
             </div>
-            <TaskSearch 
-                searchTerm={searchTerm} 
-                setSearchTerm={setSearchTerm}
-                filterCategory={filterCategory}
-                setFilterCategory={setFilterCategory}
-                filterPriority={filterPriority}
-                setFilterPriority={setFilterPriority}
-                sortBy={sortBy}
-                setSortBy={setSortBy}
-                darkMode={darkMode}
+            <InputData 
+                inputDiv={inputDiv} 
+                setInputDiv={setInputDiv} 
+                UpdatedData={UpdatedData} 
+                setUpdatedData={setUpdatedData} 
+                onTaskAdded={handleTaskAdded}
             />
-            <TaskList 
-                tasks={filteredTasks} 
-                onEditTask={handleEditTask} 
-                onDeleteTask={deleteTask}
-                darkMode={darkMode}
-            />
-            {showTaskForm && (
-                <TaskForm
-                    onClose={() => {
-                        setShowTaskForm(false);
-                        setEditingTask(null);
-                    }}
-                    onSubmit={(task) => {
-                        if (editingTask) {
-                            updateTask(task);
-                        } else {
-                            addTask(task);
-                        }
-                        setShowTaskForm(false);
-                        setEditingTask(null);
-                    }}
-                    initialTask={editingTask}
-                    darkMode={darkMode}
-                />
-            )}
-        </div>
+        </>
     )
 }
 
