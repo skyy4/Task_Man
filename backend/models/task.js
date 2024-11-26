@@ -1,32 +1,32 @@
-const mongoose = require('mongoose');
+const mongoose = require('mongoose')
 
-const user = require('../models/user');
-
-const Schema = mongoose.Schema;
-
-const taskSchema = new Schema({
-    user: {
-        type: Schema.Types.ObjectId,
-        ref: user,
-        required: true,
-    },
-    name: {
+const TaskSchema = new mongoose.Schema({
+    title: {
         type: String,
         required: true,
+        unique: true
     },
-    description: {
+    desc: {
         type: String,
         required: true,
+        unique: true
     },
-    dueDate: {
+    important: {
+        type: Boolean,
+        default:false,
+    },
+    complete: {
+        type: Boolean,
+        default:false,
+    },
+    deadline: {
         type: Date,
-        required: true,
+        default: null
     },
-    priorityLevel: {
-        type: String,
-        required: true,
-    },
-}, { timestamps: true });
+    reminder: {
+        type: Date,
+        default: null
+    }
+},{timestamps:true})
 
-const Task = mongoose.model('Task', taskSchema);
-module.exports = Task;
+module.exports = mongoose.model('task', TaskSchema)
