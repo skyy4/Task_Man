@@ -65,7 +65,7 @@ const Sidebar = () => {
     const inactiveLinkClass = "text-gray-300 hover:text-white hover:bg-gray-800";
 
     return (
-        <div className="bg-gray-900 text-white h-screen w-64 flex flex-col justify-between p-6">
+        <div className="bg-gray-900 text-white h-screen w-64 flex flex-col justify-between p-2 pl-5">
             {Data && (
                 <div className="mb-8">
                     <h2 className='text-2xl font-bold mb-2'>{Data.username}</h2>
@@ -86,7 +86,7 @@ const Sidebar = () => {
                 ))}
               
             </div>
-            <div className="mt-8">
+            <div className="mt-3">
                 {Data && <ProgressChart tasks={Data.tasks} />}
                 <button 
                     className='bg-red-500 w-full p-3 rounded-lg hover:bg-red-600 transition-colors duration-300 mt-6' 
